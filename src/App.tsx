@@ -16,6 +16,13 @@ import FormControlLabel from '@material-ui/core/FormControlLabel';
 import FormControl from '@material-ui/core/FormControl';
 import Button from '@material-ui/core/Button';
 
+import Table from '@material-ui/core/Table';
+import TableBody from '@material-ui/core/TableBody';
+import TableCell from '@material-ui/core/TableCell';
+import TableContainer from '@material-ui/core/TableContainer';
+import TableHead from '@material-ui/core/TableHead';
+import TableRow from '@material-ui/core/TableRow';
+
 // @ts-ignore
 import Rowma from 'rowma_js';
 
@@ -52,7 +59,22 @@ const useStyles = makeStyles((theme: Theme) => (
       padding: theme.spacing(2),
       textAlign: 'center',
       color: theme.palette.text.secondary,
+      background: '#fdfdfd'
     },
+    radioButtons: {
+      maxHeight: 300,
+      minHeight: 300,
+    },
+    info: {
+      padding: theme.spacing(2),
+      textAlign: 'center',
+      color: theme.palette.text.secondary,
+      background: '#f6f6f6'
+    },
+    header: {
+      color: theme.palette.text.primary,
+      background: '#fcfcfc'
+    }
   })
 ));
 
@@ -123,7 +145,7 @@ const App: React.FC = () => {
   return (
     <div className={`${classes.root} App`}>
       <ThemeProvider theme={theme}>
-        <AppBar position="static">
+        <AppBar position="static" className={classes.header}>
           <Toolbar>
             <Container>
               <Typography variant="h5">Rowma Network Console</Typography>
@@ -131,12 +153,17 @@ const App: React.FC = () => {
           </Toolbar>
         </AppBar>
         <Container>
-          <Grid container spacing={3}>
-            <Grid item xs={4}>
+          <Grid container spacing={3} className="py-8">
+            <Grid item xs={12} sm={12} md={4}>
               <Paper className={classes.paper}>
                 <div>
-                  <FormControl component="fieldset">
-                    <Typography variant='h5'>Select Your Robot{"'"}s UUID</Typography>
+                  <FormControl component="fieldset" className={classes.radioButtons}>
+                    <div className="my-4">
+                      <Typography variant='h5'>Select Your Robot{"'"}s UUID</Typography>
+                    </div>
+                    {(!robotUuids || (robotUuids && robotUuids.length === 0)) &&
+                      <p>Robot not found...</p>
+                    }
                     <RadioGroup aria-label="robots" name="robots" value={selectedRobot} onChange={handleRobotChange}>
                     {robotUuids && robotUuids.map(uuid => {
                       return (
@@ -154,11 +181,13 @@ const App: React.FC = () => {
               </Paper>
             </Grid>
 
-            <Grid item xs={4}>
+            <Grid item xs={12} sm={12} md={4}>
               <Paper className={classes.paper}>
                 <div>
-                  <FormControl component="fieldset">
-                    <Typography variant='h5'>Select a rosrun command</Typography>
+                  <FormControl component="fieldset" className={classes.radioButtons}>
+                    <div className="my-4">
+                      <Typography variant='h5'>Select a rosrun command</Typography>
+                    </div>
                     <RadioGroup aria-label="rosrun" name="rosrun" value={selectedRosrunCommand} onChange={handleRosrunCommandChange}>
                     {rosrunCommands && rosrunCommands.map(command => {
                       return (
@@ -176,11 +205,13 @@ const App: React.FC = () => {
               </Paper>
             </Grid>
 
-            <Grid item xs={4}>
+            <Grid item xs={12} sm={12} md={4}>
               <Paper className={classes.paper}>
                 <div>
-                  <FormControl component="fieldset">
-                    <Typography variant='h5'>Select a roslaunch command</Typography>
+                  <FormControl component="fieldset" className={classes.radioButtons}>
+                    <div className="my-4">
+                      <Typography variant='h5'>Select a roslaunch command</Typography>
+                    </div>
                     <RadioGroup aria-label="roslaunch" name="roslaunch" value={selectedRoslaunchCommand} onChange={handleRoslaunchCommandChange}>
                     {roslaunchCommands && roslaunchCommands.map(command => {
                       return (
@@ -203,6 +234,50 @@ const App: React.FC = () => {
                 <div>
                   <p>Send (Topic Selectbox) from (Robot Selectbox) to (Robot Selectbox)</p>
                 </div>
+              </Paper>
+            </Grid>
+
+            <Grid item xs={12}>
+              <Paper className={classes.info}>
+                <div className="my-4">
+                  <Typography variant="h6">Network Information</Typography>
+                </div>
+                <Grid
+                  container
+                  direction="row"
+                  justify="center"
+                  alignItems="center"
+                >
+                  <Grid item xs={6}>
+                    <TableContainer className="pb-4">
+                      <Table aria-label="simple table">
+                        <TableBody>
+                          <TableRow>
+                            <TableCell scope="row">Network Name</TableCell>
+                            <TableCell align="right">Rowma Public Network</TableCell>
+                          </TableRow>
+                          <TableRow>
+                            <TableCell scope="row">Network Type</TableCell>
+                            <TableCell align="right">Public</TableCell>
+                          </TableRow>
+                          <TableRow>
+                            <TableCell scope="row">Network URL</TableCell>
+                            <TableCell align="right">{'https://rocky-peak-54058.herokuapp.com'}</TableCell>
+                          </TableRow>
+                          <TableRow>
+                            <TableCell scope="row">Network Location</TableCell>
+                            <TableCell align="right">US</TableCell>
+                          </TableRow>
+                          <TableRow>
+                            <TableCell scope="row">Network Owner</TableCell>
+                            <TableCell align="right"><a href="https://asmsuechan.com">asmsuechan</a></TableCell>
+                          </TableRow>
+
+                        </TableBody>
+                      </Table>
+                    </TableContainer>
+                  </Grid>
+                </Grid>
               </Paper>
             </Grid>
 
