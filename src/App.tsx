@@ -56,7 +56,7 @@ const useStyles = makeStyles((theme: Theme) => (
   })
 ));
 
-const rowma = new Rowma({ baseURL: 'http://18.176.1.219' });
+const rowma = new Rowma({ baseURL: 'https://rocky-peak-54058.herokuapp.com' });
 
 const App: React.FC = () => {
   const [robotUuids, setRobotUuids] = React.useState<Array<string> | undefined>(undefined);
