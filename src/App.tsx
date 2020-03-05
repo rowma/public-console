@@ -64,6 +64,7 @@ const useStyles = makeStyles((theme: Theme) => (
     radioButtons: {
       maxHeight: 300,
       minHeight: 300,
+      textAlign: 'left',
     },
     info: {
       padding: theme.spacing(2),
