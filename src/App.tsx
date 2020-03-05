@@ -16,6 +16,9 @@ import FormControlLabel from '@material-ui/core/FormControlLabel';
 import FormControl from '@material-ui/core/FormControl';
 import Button from '@material-ui/core/Button';
 
+// @ts-ignore
+import Rowma from 'rowma_js';
+
 const theme = createMuiTheme({
   palette: {
     primary: {
@@ -53,8 +56,10 @@ const useStyles = makeStyles((theme: Theme) => (
   })
 ));
 
+const rowma = new Rowma({ baseURL: 'http://18.176.1.219' });
+
 const App: React.FC = () => {
-  const [robotUuids, setRobotUuids] = React.useState<Array<string>>([]);
+  const [robotUuids, setRobotUuids] = React.useState<Array<string> | undefined>(undefined);
   const [selectedRobot, setSelectedRobot] = React.useState<any | null>(null);
   const [rosrunCommands, setRosrunCommands] = React.useState<Array<string>>([]);
   const [selectedRosrunCommand, setSelectedRosrunCommand] = React.useState<string>('');
@@ -64,16 +69,14 @@ const App: React.FC = () => {
   const [connectButtonColor, setConnectButtonColor] = React.useState<any>('primary');
   const [connectButtonText, setConnectButtonText] = React.useState<any>('Connect');
 
-  useEffect(() => {
-    if (robotUuids.length === 0) {
-      const uuids = [
-        'xxxx-xxxx-xxxx-xxxx-1',
-        'xxxx-xxxx-xxxx-xxxx-2',
-        'xxxx-xxxx-xxxx-xxxx-3',
-        'xxxx-xxxx-xxxx-xxxx-4',
-      ];
+  const [socket, setSocket] = React.useState<any>(null);
 
-      setRobotUuids(uuids)
+  useEffect(() => {
+    if (robotUuids === undefined) {
+      rowma.currentConnectionList().then((res: any) => {
+        console.log(res.data)
+        setRobotUuids(res.data.map((robot: any) => robot.uuid));
+      })
     }
   });
 
@@ -84,25 +87,20 @@ const App: React.FC = () => {
   };
 
   const handleConnectClicked = () => {
-    const robot = {
-      uuid: 'xxxx-xxxx-xxxx-xxxx1',
-      launchCommands: [
-        'pkg pkg1.launch',
-        'pkg pkg2.launch'
-      ],
-      rosnodes: [ '/rosout', '/rowma' ],
-      rosrunCommands: [
-        'rowma_ros rowma',
-        'rowma_ros listener',
-        'rowma_ros talker',
-        'ros_package_template ros_package_template'
-      ],
-    }
-    setRobot(robot);
-    setRosrunCommands(robot['rosrunCommands']);
-    setRoslaunchCommands(robot['launchCommands']);
-    setConnectButtonColor('secondary');
-    setConnectButtonText('Disconnect');
+    rowma.connect(selectedRobot).then((sock: any) => {
+      setSocket(sock)
+    }).catch((e: any) => {
+      console.log(e)
+    })
+
+    rowma.getRobotStatus(selectedRobot).then((res: any) => {
+      console.log(res.data)
+      setRobot(res.data)
+      setRosrunCommands(res.data['rosrunCommands']);
+      setRoslaunchCommands(res.data['launchCommands']);
+      setConnectButtonColor('secondary');
+      setConnectButtonText('Disconnect');
+    })
   }
 
   const handleRosrunCommandChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -112,6 +110,15 @@ const App: React.FC = () => {
   const handleRoslaunchCommandChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSelectedRoslaunchCommand((event.target as HTMLInputElement).value);
   };
+
+  const handleRosrunButtonClick = () => {
+    const rosrunArgs = '';
+    rowma.runRosrun(socket, selectedRobot, selectedRosrunCommand, rosrunArgs);
+  }
+
+  const handleRoslaunchButtonClick = () => {
+    rowma.runLaunch(socket, selectedRobot, selectedRoslaunchCommand)
+  }
 
   return (
     <div className={`${classes.root} App`}>
@@ -131,7 +138,7 @@ const App: React.FC = () => {
                   <FormControl component="fieldset">
                     <Typography variant='h5'>Select Your Robot{"'"}s UUID</Typography>
                     <RadioGroup aria-label="robots" name="robots" value={selectedRobot} onChange={handleRobotChange}>
-                    {robotUuids.map(uuid => {
+                    {robotUuids && robotUuids.map(uuid => {
                       return (
                         <FormControlLabel value={uuid} control={<Radio />} label={uuid} />
                       )
@@ -153,7 +160,7 @@ const App: React.FC = () => {
                   <FormControl component="fieldset">
                     <Typography variant='h5'>Select a rosrun command</Typography>
                     <RadioGroup aria-label="rosrun" name="rosrun" value={selectedRosrunCommand} onChange={handleRosrunCommandChange}>
-                    {rosrunCommands.map(command => {
+                    {rosrunCommands && rosrunCommands.map(command => {
                       return (
                         <FormControlLabel value={command} control={<Radio />} label={command} />
                       )
@@ -162,7 +169,7 @@ const App: React.FC = () => {
                   </FormControl>
                 </div>
                 <div>
-                  <Button variant="contained" color="primary">
+                  <Button variant="contained" color="primary" onClick={handleRosrunButtonClick}>
                     Execute
                   </Button>
                 </div>
@@ -175,7 +182,7 @@ const App: React.FC = () => {
                   <FormControl component="fieldset">
                     <Typography variant='h5'>Select a roslaunch command</Typography>
                     <RadioGroup aria-label="roslaunch" name="roslaunch" value={selectedRoslaunchCommand} onChange={handleRoslaunchCommandChange}>
-                    {roslaunchCommands.map(command => {
+                    {roslaunchCommands && roslaunchCommands.map(command => {
                       return (
                         <FormControlLabel value={command} control={<Radio />} label={command} />
                       )
@@ -184,7 +191,7 @@ const App: React.FC = () => {
                   </FormControl>
                 </div>
                 <div>
-                  <Button variant="contained" color="primary">
+                  <Button variant="contained" color="primary" onClick={handleRoslaunchButtonClick}>
                     Execute
                   </Button>
                 </div>
