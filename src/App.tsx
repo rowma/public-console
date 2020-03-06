@@ -66,7 +66,8 @@ const useStyles = makeStyles((theme: Theme) => (
     radioButtons: {
       maxHeight: 300,
       minHeight: 300,
-      textAlign: 'left',
+      textAlign: 'center',
+      overflow: 'auto'
     },
     info: {
       padding: theme.spacing(2),
@@ -84,6 +85,9 @@ const useStyles = makeStyles((theme: Theme) => (
     footerLink: {
       color: '#38B48B',
       marginRight: '1rem',
+    },
+    radioGroup: {
+      textAlign: 'left',
     }
   })
 ));
@@ -174,7 +178,7 @@ const App: React.FC = () => {
                     {(!robotUuids || (robotUuids && robotUuids.length === 0)) &&
                       <p>Robot not found...</p>
                     }
-                    <RadioGroup aria-label="robots" name="robots" value={selectedRobot} onChange={handleRobotChange}>
+                    <RadioGroup aria-label="robots" name="robots" value={selectedRobot} onChange={handleRobotChange} className={classes.radioGroup}>
                     {robotUuids && robotUuids.map(uuid => {
                       return (
                         <FormControlLabel value={uuid} control={<Radio />} label={uuid} />
@@ -198,7 +202,7 @@ const App: React.FC = () => {
                     <div className="my-4">
                       <Typography variant='h5'>Select a rosrun command</Typography>
                     </div>
-                    <RadioGroup aria-label="rosrun" name="rosrun" value={selectedRosrunCommand} onChange={handleRosrunCommandChange}>
+                    <RadioGroup aria-label="rosrun" name="rosrun" value={selectedRosrunCommand} onChange={handleRosrunCommandChange} className={classes.radioGroup}>
                     {rosrunCommands && rosrunCommands.map(command => {
                       return (
                         <FormControlLabel value={command} control={<Radio />} label={command} />
@@ -222,7 +226,7 @@ const App: React.FC = () => {
                     <div className="my-4">
                       <Typography variant='h5'>Select a roslaunch command</Typography>
                     </div>
-                    <RadioGroup aria-label="roslaunch" name="roslaunch" value={selectedRoslaunchCommand} onChange={handleRoslaunchCommandChange}>
+                    <RadioGroup aria-label="roslaunch" name="roslaunch" value={selectedRoslaunchCommand} onChange={handleRoslaunchCommandChange} className={classes.radioGroup}>
                     {roslaunchCommands && roslaunchCommands.map(command => {
                       return (
                         <FormControlLabel value={command} control={<Radio />} label={command} />
