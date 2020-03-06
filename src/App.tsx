@@ -9,6 +9,8 @@ import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
 import Paper from '@material-ui/core/Paper';
 import Grid from '@material-ui/core/Grid';
+import Box from '@material-ui/core/Box';
+import Link from '@material-ui/core/Link';
 
 import Radio from '@material-ui/core/Radio';
 import RadioGroup from '@material-ui/core/RadioGroup';
@@ -75,6 +77,13 @@ const useStyles = makeStyles((theme: Theme) => (
     header: {
       color: theme.palette.text.primary,
       background: '#fcfcfc'
+    },
+    footer: {
+      textAlign: 'left',
+    },
+    footerLink: {
+      color: '#38B48B',
+      marginRight: '1rem',
     }
   })
 ));
@@ -280,6 +289,13 @@ const App: React.FC = () => {
                   </Grid>
                 </Grid>
               </Paper>
+            </Grid>
+
+            <Grid item xs={12}>
+              <Box className={classes.footer} fontSize={16}>
+                <Link className={classes.footerLink} href="https://rowma.github.io/documentation/en/getting-started">Documentation</Link>
+                <Link className={classes.footerLink} href="https://github.com/rowma/rowma">GitHub</Link>
+              </Box>
             </Grid>
 
           </Grid>
