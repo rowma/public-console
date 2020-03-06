@@ -249,7 +249,7 @@ const App: React.FC = () => {
                   justify="center"
                   alignItems="center"
                 >
-                  <Grid item xs={6}>
+                  <Grid item xs={12} sm={12} md={6}>
                     <TableContainer className="pb-4">
                       <Table aria-label="simple table">
                         <TableBody>
