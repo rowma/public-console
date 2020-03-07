@@ -22,7 +22,6 @@ import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
 import TableCell from '@material-ui/core/TableCell';
 import TableContainer from '@material-ui/core/TableContainer';
-import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 
 // @ts-ignore
@@ -297,6 +296,7 @@ const App: React.FC = () => {
 
             <Grid item xs={12}>
               <Box className={classes.footer} fontSize={16}>
+                <Link className={classes.footerLink} href="">How to Use This Page</Link>
                 <Link className={classes.footerLink} href="https://rowma.github.io/documentation/en/getting-started">Documentation</Link>
                 <Link className={classes.footerLink} href="https://github.com/rowma/rowma">GitHub</Link>
               </Box>
