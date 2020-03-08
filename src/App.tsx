@@ -11,6 +11,7 @@ import Paper from '@material-ui/core/Paper';
 import Grid from '@material-ui/core/Grid';
 import Box from '@material-ui/core/Box';
 import Link from '@material-ui/core/Link';
+import TextField from '@material-ui/core/TextField';
 
 import Radio from '@material-ui/core/Radio';
 import RadioGroup from '@material-ui/core/RadioGroup';
@@ -33,7 +34,7 @@ const theme = createMuiTheme({
       main: '#ffffff',
     },
     secondary: {
-      main: '#ED4A70',
+      main: '#38B48B',
     },
     contrastThreshold: 3,
     tonalOffset: 0.2,
@@ -87,13 +88,19 @@ const useStyles = makeStyles((theme: Theme) => (
     },
     radioGroup: {
       textAlign: 'left',
+    },
+    textField: {
+      width: '60%',
+    },
+    submitUrlButton: {
+      marginLeft: '1rem',
     }
   })
 ));
 
-const rowma = new Rowma({ baseURL: 'https://rocky-peak-54058.herokuapp.com' });
-
 const App: React.FC = () => {
+  const [rowmaUrl, setRowmaUrl] = React.useState<string>("https://rocky-peak-54058.herokuapp.com");
+  const [rowma, setRowma] = React.useState<any>(null);
   const [robotUuids, setRobotUuids] = React.useState<Array<string> | undefined>(undefined);
   const [selectedRobot, setSelectedRobot] = React.useState<any | null>(null);
   const [rosrunCommands, setRosrunCommands] = React.useState<Array<string>>([]);
@@ -107,15 +114,22 @@ const App: React.FC = () => {
   const [socket, setSocket] = React.useState<any>(null);
 
   useEffect(() => {
-    if (robotUuids === undefined) {
-      rowma.currentConnectionList().then((res: any) => {
-        console.log(res.data)
-        setRobotUuids(res.data.map((robot: any) => robot.uuid));
-      })
-    }
   });
 
   const classes = useStyles();
+
+  const handleUrlFieldChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setRowmaUrl((event.target as HTMLInputElement).value);
+  }
+
+  const handleConnectNetworkClick = () => {
+    const _rowma = new Rowma({ baseURL: rowmaUrl })
+    setRowma(_rowma);
+
+    _rowma.currentConnectionList().then((res: any) => {
+      setRobotUuids(res.data.map((robot: any) => robot.uuid));
+    })
+  }
 
   const handleRobotChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSelectedRobot((event.target as HTMLInputElement).value);
@@ -167,6 +181,17 @@ const App: React.FC = () => {
         </AppBar>
         <Container>
           <Grid container spacing={3} className="py-8">
+            <Grid item xs={12} sm={12} md={12}>
+              <Paper className={classes.paper}>
+                <div className="flex items-center justify-center">
+                  <TextField color="secondary" margin="dense" label="Network URL" variant="outlined" className={classes.textField} onChange={handleUrlFieldChange} value={rowmaUrl} />
+                  <Button variant="contained" color={connectButtonColor} className={classes.submitUrlButton} onClick={handleConnectNetworkClick} >
+                    Connect
+                  </Button>
+                </div>
+              </Paper>
+            </Grid>
+
             <Grid item xs={12} sm={12} md={4}>
               <Paper className={classes.paper}>
                 <div>
