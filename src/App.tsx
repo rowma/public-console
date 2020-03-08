@@ -98,6 +98,24 @@ const useStyles = makeStyles((theme: Theme) => (
   })
 ));
 
+interface NetworkInformationInterface {
+  name: string;
+  type: string;
+  location: string;
+  owner: string;
+  version: string;
+  url: string;
+}
+
+const emptyNetworkInformation: NetworkInformationInterface = {
+  name: '',
+  type: '',
+  location: '',
+  owner: '',
+  version: '',
+  url: ''
+}
+
 const App: React.FC = () => {
   const [rowmaUrl, setRowmaUrl] = React.useState<string>("https://rocky-peak-54058.herokuapp.com");
   const [rowma, setRowma] = React.useState<any>(null);
@@ -110,6 +128,7 @@ const App: React.FC = () => {
   const [robot, setRobot] = React.useState<any>({});
   const [connectButtonColor, setConnectButtonColor] = React.useState<any>('primary');
   const [connectButtonText, setConnectButtonText] = React.useState<any>('Connect');
+  const [networkInformation, setNetworkInformation] = React.useState<any>(emptyNetworkInformation);
 
   const [socket, setSocket] = React.useState<any>(null);
 
@@ -125,6 +144,10 @@ const App: React.FC = () => {
   const handleConnectNetworkClick = () => {
     const _rowma = new Rowma({ baseURL: rowmaUrl })
     setRowma(_rowma);
+
+    _rowma.getNetworkInformation().then((res: any) => {
+      setNetworkInformation({ url: rowmaUrl, ...res.data })
+    })
 
     _rowma.currentConnectionList().then((res: any) => {
       setRobotUuids(res.data.map((robot: any) => robot.uuid));
@@ -143,7 +166,6 @@ const App: React.FC = () => {
     })
 
     rowma.getRobotStatus(selectedRobot).then((res: any) => {
-      console.log(res.data)
       setRobot(res.data)
       setRosrunCommands(res.data['rosrunCommands']);
       setRoslaunchCommands(res.data['launchCommands']);
@@ -292,23 +314,27 @@ const App: React.FC = () => {
                         <TableBody>
                           <TableRow>
                             <TableCell scope="row">Network Name</TableCell>
-                            <TableCell align="right">Rowma Public Network</TableCell>
+                            <TableCell align="right">{networkInformation.name}</TableCell>
                           </TableRow>
                           <TableRow>
                             <TableCell scope="row">Network Type</TableCell>
-                            <TableCell align="right">Public</TableCell>
+                            <TableCell align="right">{networkInformation.type}</TableCell>
                           </TableRow>
                           <TableRow>
                             <TableCell scope="row">Network URL</TableCell>
-                            <TableCell align="right">{'https://rocky-peak-54058.herokuapp.com'}</TableCell>
+                            <TableCell align="right">{networkInformation.url}</TableCell>
                           </TableRow>
                           <TableRow>
                             <TableCell scope="row">Network Location</TableCell>
-                            <TableCell align="right">US</TableCell>
+                            <TableCell align="right">{networkInformation.location}</TableCell>
                           </TableRow>
                           <TableRow>
                             <TableCell scope="row">Network Owner</TableCell>
-                            <TableCell align="right"><a href="https://asmsuechan.com">asmsuechan</a></TableCell>
+                            <TableCell align="right">{networkInformation.owner}</TableCell>
+                          </TableRow>
+                          <TableRow>
+                            <TableCell scope="row">Network Version</TableCell>
+                            <TableCell align="right">{networkInformation.version}</TableCell>
                           </TableRow>
 
                         </TableBody>
