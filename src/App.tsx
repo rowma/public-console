@@ -147,7 +147,7 @@ const App: React.FC = () => {
       setRobot(res.data)
       setRosrunCommands(res.data['rosrunCommands']);
       setRoslaunchCommands(res.data['launchCommands']);
-      setConnectButtonColor('secondary');
+      setConnectButtonColor('default');
       setConnectButtonText('Disconnect');
     })
   }
