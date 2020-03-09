@@ -203,21 +203,25 @@ const App: React.FC = () => {
 
   const handleRosrunButtonClick = async () => {
     setRosrunButtonLoading(true);
+    setRosnodeButtonLoading(true);
     const rosrunArgs = '';
     await rowma.runRosrun(socket, selectedRobot, selectedRosrunCommand, rosrunArgs);
     setRosrunButtonLoading(false);
     await sleep(2500);
     const _robot = await rowma.getRobotStatus(selectedRobot)
     setRosnodes(_robot.data.rosnodes)
+    setRosnodeButtonLoading(false);
   }
 
   const handleRoslaunchButtonClick = async () => {
     setRoslaunchButtonLoading(true);
+    setRosnodeButtonLoading(true);
     const result = await rowma.runLaunch(socket, selectedRobot, selectedRoslaunchCommand)
     setRoslaunchButtonLoading(false);
     await sleep(2500);
     const _robot = await rowma.getRobotStatus(selectedRobot)
     setRosnodes(_robot.data.rosnodes)
+    setRosnodeButtonLoading(false);
   }
 
   const handleRosnodeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
