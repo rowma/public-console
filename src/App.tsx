@@ -136,14 +136,17 @@ const App: React.FC = () => {
   const [selectedRosrunCommand, setSelectedRosrunCommand] = React.useState<string>('');
   const [roslaunchCommands, setRoslaunchCommands] = React.useState<Array<string>>([]);
   const [rosnodes, setRosnodes] = React.useState<Array<string>>([]);
+  const [rostopics, setRostopics] = React.useState<Array<string>>([]);
   const [selectedRoslaunchCommand, setSelectedRoslaunchCommand] = React.useState<string>('');
   const [selectedRosnode, setSelectedRosnode] = React.useState<string>('');
+  const [selectedRostopic, setSelectedRostopic] = React.useState<string>('');
   const [robot, setRobot] = React.useState<any>({});
   const [submitUrlButtonLoading, setSubmitUrlButtonLoading] = React.useState<boolean>(false);
   const [connectButtonLoading, setConnectButtonLoading] = React.useState<boolean>(false);
   const [rosrunButtonLoading, setRosrunButtonLoading] = React.useState<boolean>(false);
   const [roslaunchButtonLoading, setRoslaunchButtonLoading] = React.useState<boolean>(false);
   const [rosnodeButtonLoading, setRosnodeButtonLoading] = React.useState<boolean>(false);
+  const [rostopicButtonLoading, setRostopicButtonLoading] = React.useState<boolean>(false);
   const [networkInformation, setNetworkInformation] = React.useState<any>(emptyNetworkInformation);
 
   const [socket, setSocket] = React.useState<any>(null);
@@ -168,6 +171,7 @@ const App: React.FC = () => {
     setRobot({})
     setRosrunCommands([]);
     setRoslaunchCommands([]);
+    setRostopics([]);
 
     setSubmitUrlButtonLoading(false);
   }
@@ -189,6 +193,7 @@ const App: React.FC = () => {
       setRosnodes(res.data.rosnodes)
       setRosrunCommands(res.data.rosrunCommands);
       setRoslaunchCommands(res.data.launchCommands);
+      setRostopics(res.data.rostopics);
       setConnectButtonLoading(false);
     })
   }
@@ -236,6 +241,16 @@ const App: React.FC = () => {
       rosnodes.splice(index, 1);
     }
     setRosnodeButtonLoading(false);
+  }
+
+  const handleSubscribeButtonClick = async () => {
+    setRostopicButtonLoading(true);
+    await rowma.subscribeTopic(socket, selectedRobot, 'application', rowma.uuid, selectedRostopic);
+    setRostopicButtonLoading(false);
+  }
+
+  const handleRostopicChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSelectedRostopic((event.target as HTMLInputElement).value);
   }
 
   return (
@@ -400,8 +415,12 @@ const App: React.FC = () => {
                     <div className="my-4">
                       <Typography variant='h5'>Subscribe rostopic</Typography>
                     </div>
-
-                    <RadioGroup aria-label="rosnodes" name="rosnodes" value={selectedRosnode} onChange={handleRosnodeChange} className={classes.radioGroup}>
+                    <RadioGroup aria-label="rostopics" name="rostopics" value={selectedRostopic} onChange={handleRostopicChange} className={classes.radioGroup}>
+                      {rostopics && rostopics.map((topic: any) => {
+                        return (
+                          <FormControlLabel value={topic} control={<Radio />} label={topic} />
+                        )
+                      })}
                     </RadioGroup>
                   </FormControl>
                 </div>
@@ -409,8 +428,8 @@ const App: React.FC = () => {
                   <Button
                     variant="contained"
                     color="primary"
-                    disabled
-                    onClick={() => {}}
+                    disabled={rostopicButtonLoading || selectedRostopic === ''}
+                    onClick={handleSubscribeButtonClick}
                   >
                     Subscribe
                   </Button>
