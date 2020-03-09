@@ -409,6 +409,7 @@ const App: React.FC = () => {
                   <Button
                     variant="contained"
                     color="primary"
+                    disabled
                     onClick={() => {}}
                   >
                     Subscribe
