@@ -243,8 +243,9 @@ const App: React.FC = () => {
       <ThemeProvider theme={theme}>
         <AppBar position="static" className={classes.header}>
           <Toolbar>
-            <Container>
-              <Typography variant="h5">Rowma Network Console</Typography>
+            <Container className="text-left">
+              <img src="/public-console/logo.png" width="28" height="28" className="inline mx-4" />
+              <Typography variant="h5" className="inline align-middle">Rowma Network Console</Typography>
             </Container>
           </Toolbar>
         </AppBar>
