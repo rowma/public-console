@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import './App.css';
 
 import { createMuiTheme, makeStyles, ThemeProvider, Theme, createStyles } from '@material-ui/core/styles';
+import { green } from '@material-ui/core/colors';
 
 import AppBar from '@material-ui/core/AppBar';
 import Container from '@material-ui/core/Container';
@@ -18,6 +19,7 @@ import RadioGroup from '@material-ui/core/RadioGroup';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import FormControl from '@material-ui/core/FormControl';
 import Button from '@material-ui/core/Button';
+import CircularProgress from '@material-ui/core/CircularProgress';
 
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
@@ -92,11 +94,20 @@ const useStyles = makeStyles((theme: Theme) => (
     textField: {
       width: '60%',
     },
-    submitUrlButton: {
-      marginLeft: '1rem',
-    }
+    buttonProgress: {
+      color: green[500],
+      position: 'absolute',
+      top: '50%',
+      left: '50%',
+      marginTop: -12,
+      marginLeft: -12,
+    },
   })
 ));
+
+const sleep = (ms: number) => {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
 
 interface NetworkInformationInterface {
   name: string;
@@ -124,16 +135,18 @@ const App: React.FC = () => {
   const [rosrunCommands, setRosrunCommands] = React.useState<Array<string>>([]);
   const [selectedRosrunCommand, setSelectedRosrunCommand] = React.useState<string>('');
   const [roslaunchCommands, setRoslaunchCommands] = React.useState<Array<string>>([]);
+  const [rosnodes, setRosnodes] = React.useState<Array<string>>([]);
   const [selectedRoslaunchCommand, setSelectedRoslaunchCommand] = React.useState<string>('');
+  const [selectedRosnode, setSelectedRosnode] = React.useState<string>('');
   const [robot, setRobot] = React.useState<any>({});
-  const [connectButtonColor, setConnectButtonColor] = React.useState<any>('primary');
-  const [connectButtonText, setConnectButtonText] = React.useState<any>('Connect');
+  const [submitUrlButtonLoading, setSubmitUrlButtonLoading] = React.useState<boolean>(false);
+  const [connectButtonLoading, setConnectButtonLoading] = React.useState<boolean>(false);
+  const [rosrunButtonLoading, setRosrunButtonLoading] = React.useState<boolean>(false);
+  const [roslaunchButtonLoading, setRoslaunchButtonLoading] = React.useState<boolean>(false);
+  const [rosnodeButtonLoading, setRosnodeButtonLoading] = React.useState<boolean>(false);
   const [networkInformation, setNetworkInformation] = React.useState<any>(emptyNetworkInformation);
 
   const [socket, setSocket] = React.useState<any>(null);
-
-  useEffect(() => {
-  });
 
   const classes = useStyles();
 
@@ -141,17 +154,22 @@ const App: React.FC = () => {
     setRowmaUrl((event.target as HTMLInputElement).value);
   }
 
-  const handleConnectNetworkClick = () => {
+  const handleConnectNetworkClick = async () => {
+    setSubmitUrlButtonLoading(true);
     const _rowma = new Rowma({ baseURL: rowmaUrl })
     setRowma(_rowma);
 
-    _rowma.getNetworkInformation().then((res: any) => {
-      setNetworkInformation({ url: rowmaUrl, ...res.data })
-    })
+    const networkInfo = await _rowma.getNetworkInformation()
+    setNetworkInformation({ url: rowmaUrl, ...networkInfo.data })
 
-    _rowma.currentConnectionList().then((res: any) => {
-      setRobotUuids(res.data.map((robot: any) => robot.uuid));
-    })
+    const connList = await _rowma.currentConnectionList()
+    setRobotUuids(connList.data.map((robot: any) => robot.uuid));
+
+    setRobot({})
+    setRosrunCommands([]);
+    setRoslaunchCommands([]);
+
+    setSubmitUrlButtonLoading(false);
   }
 
   const handleRobotChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -159,6 +177,7 @@ const App: React.FC = () => {
   };
 
   const handleConnectClicked = () => {
+    setConnectButtonLoading(true);
     rowma.connect(selectedRobot).then((sock: any) => {
       setSocket(sock)
     }).catch((e: any) => {
@@ -167,10 +186,10 @@ const App: React.FC = () => {
 
     rowma.getRobotStatus(selectedRobot).then((res: any) => {
       setRobot(res.data)
-      setRosrunCommands(res.data['rosrunCommands']);
-      setRoslaunchCommands(res.data['launchCommands']);
-      setConnectButtonColor('default');
-      setConnectButtonText('Disconnect');
+      setRosnodes(res.data.rosnodes)
+      setRosrunCommands(res.data.rosrunCommands);
+      setRoslaunchCommands(res.data.launchCommands);
+      setConnectButtonLoading(false);
     })
   }
 
@@ -182,13 +201,37 @@ const App: React.FC = () => {
     setSelectedRoslaunchCommand((event.target as HTMLInputElement).value);
   };
 
-  const handleRosrunButtonClick = () => {
+  const handleRosrunButtonClick = async () => {
+    setRosrunButtonLoading(true);
     const rosrunArgs = '';
-    rowma.runRosrun(socket, selectedRobot, selectedRosrunCommand, rosrunArgs);
+    await rowma.runRosrun(socket, selectedRobot, selectedRosrunCommand, rosrunArgs);
+    setRosrunButtonLoading(false);
+    await sleep(2500);
+    const _robot = await rowma.getRobotStatus(selectedRobot)
+    setRosnodes(_robot.data.rosnodes)
   }
 
-  const handleRoslaunchButtonClick = () => {
-    rowma.runLaunch(socket, selectedRobot, selectedRoslaunchCommand)
+  const handleRoslaunchButtonClick = async () => {
+    setRoslaunchButtonLoading(true);
+    const result = await rowma.runLaunch(socket, selectedRobot, selectedRoslaunchCommand)
+    setRoslaunchButtonLoading(false);
+    await sleep(2500);
+    const _robot = await rowma.getRobotStatus(selectedRobot)
+    setRosnodes(_robot.data.rosnodes)
+  }
+
+  const handleRosnodeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSelectedRosnode((event.target as HTMLInputElement).value);
+  }
+
+  const handleRosnodeButtonClick = async () => {
+    setRosnodeButtonLoading(true);
+    const result = await rowma.killNodes(socket, selectedRobot, [selectedRosnode]);
+    if (result.status === 'success') {
+      const index = rosnodes.indexOf(selectedRosnode)
+      rosnodes.splice(index, 1);
+    }
+    setRosnodeButtonLoading(false);
   }
 
   return (
@@ -207,9 +250,17 @@ const App: React.FC = () => {
               <Paper className={classes.paper}>
                 <div className="flex items-center justify-center">
                   <TextField color="secondary" margin="dense" label="Network URL" variant="outlined" className={classes.textField} onChange={handleUrlFieldChange} value={rowmaUrl} />
-                  <Button variant="contained" color={connectButtonColor} className={classes.submitUrlButton} onClick={handleConnectNetworkClick} >
-                    Connect
-                  </Button>
+                  <div className="relative mx-4">
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      disabled={submitUrlButtonLoading}
+                      onClick={handleConnectNetworkClick}
+                    >
+                      Connect
+                    </Button>
+                    {submitUrlButtonLoading && <CircularProgress size={24} className={classes.buttonProgress} />}
+                  </div>
                 </div>
               </Paper>
             </Grid>
@@ -233,10 +284,16 @@ const App: React.FC = () => {
                     </RadioGroup>
                   </FormControl>
                 </div>
-                <div>
-                  <Button variant="contained" color={connectButtonColor} onClick={handleConnectClicked}>
-                    {connectButtonText}
+                <div className="relative">
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    disabled={connectButtonLoading || !selectedRobot}
+                    onClick={handleConnectClicked}
+                  >
+                    Connect
                   </Button>
+                  {connectButtonLoading && <CircularProgress size={24} className={classes.buttonProgress} />}
                 </div>
               </Paper>
             </Grid>
@@ -257,10 +314,16 @@ const App: React.FC = () => {
                     </RadioGroup>
                   </FormControl>
                 </div>
-                <div>
-                  <Button variant="contained" color="primary" onClick={handleRosrunButtonClick}>
+                <div className="relative">
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    disabled={rosrunButtonLoading || selectedRosrunCommand === ''}
+                    onClick={handleRosrunButtonClick}
+                  >
                     Execute
                   </Button>
+                  {rosrunButtonLoading && <CircularProgress size={24} className={classes.buttonProgress} />}
                 </div>
               </Paper>
             </Grid>
@@ -281,9 +344,69 @@ const App: React.FC = () => {
                     </RadioGroup>
                   </FormControl>
                 </div>
-                <div>
-                  <Button variant="contained" color="primary" onClick={handleRoslaunchButtonClick}>
+                <div className="relative">
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    disabled={roslaunchButtonLoading || selectedRoslaunchCommand === ''}
+                    onClick={handleRoslaunchButtonClick}
+                  >
                     Execute
+                  </Button>
+                  {roslaunchButtonLoading && <CircularProgress size={24} className={classes.buttonProgress} />}
+                </div>
+              </Paper>
+            </Grid>
+
+            <Grid item xs={12} sm={12} md={4}>
+              <Paper className={classes.paper}>
+                <div>
+                  <FormControl component="fieldset" className={classes.radioButtons}>
+                    <div className="my-4">
+                      <Typography variant='h5'>Running ROS nodes</Typography>
+                    </div>
+                    <RadioGroup aria-label="rosnodes" name="rosnodes" value={selectedRosnode} onChange={handleRosnodeChange} className={classes.radioGroup}>
+                    {rosnodes && rosnodes.map((node: any) => {
+                      return (
+                        <FormControlLabel value={node} control={<Radio />} label={node} />
+                      )
+                    })}
+                    </RadioGroup>
+                  </FormControl>
+                </div>
+                <div className="relative">
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    disabled={rosnodeButtonLoading || selectedRosnode === ''}
+                    onClick={handleRosnodeButtonClick}
+                  >
+                    Kill
+                  </Button>
+                  {rosnodeButtonLoading && <CircularProgress size={24} className={classes.buttonProgress} />}
+                </div>
+              </Paper>
+            </Grid>
+
+            <Grid item xs={12} sm={12} md={8}>
+              <Paper className={classes.paper}>
+                <div>
+                  <FormControl component="fieldset" className={classes.radioButtons}>
+                    <div className="my-4">
+                      <Typography variant='h5'>Subscribe rostopic</Typography>
+                    </div>
+
+                    <RadioGroup aria-label="rosnodes" name="rosnodes" value={selectedRosnode} onChange={handleRosnodeChange} className={classes.radioGroup}>
+                    </RadioGroup>
+                  </FormControl>
+                </div>
+                <div className="relative">
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={() => {}}
+                  >
+                    Subscribe
                   </Button>
                 </div>
               </Paper>
