@@ -139,9 +139,11 @@ const App: React.FC = () => {
   const [roslaunchCommands, setRoslaunchCommands] = React.useState<Array<string>>([]);
   const [rosnodes, setRosnodes] = React.useState<Array<string>>([]);
   const [rostopics, setRostopics] = React.useState<Array<string>>([]);
+  const [topicMsg, setTopicMsg] = React.useState<string>('');
   const [selectedRoslaunchCommand, setSelectedRoslaunchCommand] = React.useState<string>('');
   const [selectedRosnode, setSelectedRosnode] = React.useState<string>('');
   const [selectedRostopic, setSelectedRostopic] = React.useState<string>('');
+  const [selectedRostopicForPublish, setSelectedRostopicForPublish] = React.useState<string>('');
   const [robot, setRobot] = React.useState<any>({});
   const [submitUrlButtonLoading, setSubmitUrlButtonLoading] = React.useState<boolean>(false);
   const [connectButtonLoading, setConnectButtonLoading] = React.useState<boolean>(false);
@@ -149,6 +151,8 @@ const App: React.FC = () => {
   const [roslaunchButtonLoading, setRoslaunchButtonLoading] = React.useState<boolean>(false);
   const [rosnodeButtonLoading, setRosnodeButtonLoading] = React.useState<boolean>(false);
   const [rostopicButtonLoading, setRostopicButtonLoading] = React.useState<boolean>(false);
+  const [rostopicForPublishButtonLoading, setRostopicForPublishButtonLoading] = React.useState<boolean>(false);
+
   const [networkInformation, setNetworkInformation] = React.useState<any>(emptyNetworkInformation);
   const [items, setItems] = React.useState<Array<string>>([]);
 
@@ -283,6 +287,28 @@ const App: React.FC = () => {
       {Row}
     </VariableSizeList>
   );
+
+  const handleUnsubscribeButtonClick = () => {
+  }
+
+  const handlePublishButtonClick = async () => {
+    setRostopicForPublishButtonLoading(true);
+    const msg = {
+      "op": "publish",
+      "topic": selectedRostopicForPublish,
+      "msg": JSON.parse(topicMsg),
+    }
+    await rowma.publishTopic(socket, selectedRobot, msg)
+    setRostopicForPublishButtonLoading(false);
+  }
+
+  const handleTopicMsgChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setTopicMsg((event.target as HTMLInputElement).value);
+  }
+
+  const handlePublishRostopicChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSelectedRostopicForPublish((event.target as HTMLInputElement).value);
+  }
 
   return (
     <div className={`${classes.root} App`}>
@@ -473,6 +499,79 @@ const App: React.FC = () => {
               </Paper>
             </Grid>
 
+            <Grid item xs={12} sm={12} md={4}>
+              <Paper className={classes.paper}>
+                <div>
+                  <FormControl component="fieldset" className={classes.radioButtons}>
+                    <div className="my-4">
+                      <Typography variant='h5'>Unsubscribe rostopic</Typography>
+                    </div>
+                    <RadioGroup aria-label="rosnodes" name="rosnodes" value={selectedRosnode} onChange={handleRosnodeChange} className={classes.radioGroup}>
+                    {rosnodes && rosnodes.map((node: any) => {
+                      return (
+                        <FormControlLabel value={node} control={<Radio />} label={node} />
+                      )
+                    })}
+                    </RadioGroup>
+                  </FormControl>
+                </div>
+                <div className="relative">
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    disabled
+                    onClick={handleUnsubscribeButtonClick}
+                  >
+                    Unsubscribe
+                  </Button>
+                </div>
+              </Paper>
+            </Grid>
+
+            <Grid item xs={12} sm={12} md={8}>
+              <Paper className={classes.paper}>
+                <div className="flex">
+                  <div className="w-1/3">
+                    <FormControl component="fieldset" className={classes.radioButtons}>
+                      <div className="my-4">
+                        <Typography variant='h5'>Publish rostopic</Typography>
+                      </div>
+                      <RadioGroup aria-label="rostopics" name="rostopics" value={selectedRostopicForPublish} onChange={handlePublishRostopicChange} className={classes.radioGroup}>
+                        {rostopics && rostopics.map((topic: any) => {
+                          return (
+                            <FormControlLabel value={topic} control={<Radio />} label={topic} />
+                          )
+                        })}
+                      </RadioGroup>
+                    </FormControl>
+                    <div className="relative">
+                      <Button
+                        variant="contained"
+                        color="primary"
+                        disabled={rostopicForPublishButtonLoading || selectedRostopicForPublish === ''}
+                        onClick={handlePublishButtonClick}
+                      >
+                        Publish
+                      </Button>
+                    </div>
+                  </div>
+                  <div className="w-2/3">
+                    <TextField
+                      className="border"
+                      label="Write your topic"
+                      multiline
+                      rows="15"
+                      placeholder='{"data": "This is a sample for std_msgs/String"}'
+                      color="secondary"
+                      fullWidth
+                      variant="outlined"
+                      onChange={handleTopicMsgChange}
+                      value={topicMsg}
+                    />
+                  </div>
+                </div>
+              </Paper>
+            </Grid>
             <Grid item xs={12}>
               <Paper className={classes.paper}>
                 <div>
