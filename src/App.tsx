@@ -144,6 +144,7 @@ const App: React.FC = () => {
   const [selectedRosnode, setSelectedRosnode] = React.useState<string>('');
   const [selectedRostopic, setSelectedRostopic] = React.useState<string>('');
   const [selectedRostopicForPublish, setSelectedRostopicForPublish] = React.useState<string>('');
+  const [selectedRostopicForUnsubscribe, setSelectedRostopicForUnsubscribe] = React.useState<string>('');
   const [robot, setRobot] = React.useState<any>({});
   const [submitUrlButtonLoading, setSubmitUrlButtonLoading] = React.useState<boolean>(false);
   const [connectButtonLoading, setConnectButtonLoading] = React.useState<boolean>(false);
@@ -152,6 +153,7 @@ const App: React.FC = () => {
   const [rosnodeButtonLoading, setRosnodeButtonLoading] = React.useState<boolean>(false);
   const [rostopicButtonLoading, setRostopicButtonLoading] = React.useState<boolean>(false);
   const [rostopicForPublishButtonLoading, setRostopicForPublishButtonLoading] = React.useState<boolean>(false);
+  const [rostopicForUnsubscribeButtonLoading, setRostopicForUnsubscribeButtonLoading] = React.useState<boolean>(false);
 
   const [networkInformation, setNetworkInformation] = React.useState<any>(emptyNetworkInformation);
   const [items, setItems] = React.useState<Array<string>>([]);
@@ -289,6 +291,9 @@ const App: React.FC = () => {
   );
 
   const handleUnsubscribeButtonClick = () => {
+    setRostopicForUnsubscribeButtonLoading(true);
+    rowma.unsubscribeTopic(socket, selectedRobot, selectedRostopicForUnsubscribe)
+    setRostopicForUnsubscribeButtonLoading(false);
   }
 
   const handlePublishButtonClick = async () => {
@@ -308,6 +313,10 @@ const App: React.FC = () => {
 
   const handlePublishRostopicChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSelectedRostopicForPublish((event.target as HTMLInputElement).value);
+  }
+
+  const handleRostopicUnsubscribeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSelectedRostopicForUnsubscribe((event.target as HTMLInputElement).value)
   }
 
   return (
@@ -506,10 +515,10 @@ const App: React.FC = () => {
                     <div className="my-4">
                       <Typography variant='h5'>Unsubscribe rostopic</Typography>
                     </div>
-                    <RadioGroup aria-label="rosnodes" name="rosnodes" value={selectedRosnode} onChange={handleRosnodeChange} className={classes.radioGroup}>
-                    {rosnodes && rosnodes.map((node: any) => {
+                    <RadioGroup aria-label="rostopics" name="rostopics" value={selectedRostopicForUnsubscribe} onChange={handleRostopicUnsubscribeChange} className={classes.radioGroup}>
+                    {rostopics && rostopics.map((topic: any) => {
                       return (
-                        <FormControlLabel value={node} control={<Radio />} label={node} />
+                        <FormControlLabel value={topic} control={<Radio />} label={topic} />
                       )
                     })}
                     </RadioGroup>
@@ -519,7 +528,7 @@ const App: React.FC = () => {
                   <Button
                     variant="contained"
                     color="primary"
-                    disabled
+                    disabled={rostopicForUnsubscribeButtonLoading || selectedRostopicForUnsubscribe === ''}
                     onClick={handleUnsubscribeButtonClick}
                   >
                     Unsubscribe
