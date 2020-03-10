@@ -4,6 +4,8 @@ import './App.css';
 import { createMuiTheme, makeStyles, ThemeProvider, Theme, createStyles } from '@material-ui/core/styles';
 import { green } from '@material-ui/core/colors';
 
+import { VariableSizeList } from 'react-window';
+
 import AppBar from '@material-ui/core/AppBar';
 import Container from '@material-ui/core/Container';
 import Toolbar from '@material-ui/core/Toolbar';
@@ -148,6 +150,7 @@ const App: React.FC = () => {
   const [rosnodeButtonLoading, setRosnodeButtonLoading] = React.useState<boolean>(false);
   const [rostopicButtonLoading, setRostopicButtonLoading] = React.useState<boolean>(false);
   const [networkInformation, setNetworkInformation] = React.useState<any>(emptyNetworkInformation);
+  const [items, setItems] = React.useState<Array<string>>([]);
 
   const [socket, setSocket] = React.useState<any>(null);
 
@@ -180,10 +183,15 @@ const App: React.FC = () => {
     setSelectedRobot((event.target as HTMLInputElement).value);
   };
 
+  const handleOnTopicArrival = (event: any) => {
+    setItems(items => [...items, event.msg.data])
+  }
+
   const handleConnectClicked = () => {
     setConnectButtonLoading(true);
     rowma.connect(selectedRobot).then((sock: any) => {
       setSocket(sock)
+      sock.on('topic_to_device', handleOnTopicArrival)
     }).catch((e: any) => {
       console.log(e)
     })
@@ -252,6 +260,29 @@ const App: React.FC = () => {
   const handleRostopicChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSelectedRostopic((event.target as HTMLInputElement).value);
   }
+
+  const Row = ({ index, style }: any) => (
+    <div style={style}>
+      <span className="p-4">{items[index]}</span>
+    </div>
+  );
+
+  const getItemSize = (index: number) => {
+    return items[index].length > 60 ? 70 : 30
+  }
+
+  const ListComponent = () => (
+    <VariableSizeList
+      height={300}
+      width={'95%'}
+      itemCount={items.length}
+      itemSize={getItemSize}
+      className="border text-left mt-4 mx-4"
+      initialScrollOffset={items.length * 70}
+    >
+      {Row}
+    </VariableSizeList>
+  );
 
   return (
     <div className={`${classes.root} App`}>
@@ -410,29 +441,34 @@ const App: React.FC = () => {
 
             <Grid item xs={12} sm={12} md={8}>
               <Paper className={classes.paper}>
-                <div>
-                  <FormControl component="fieldset" className={classes.radioButtons}>
-                    <div className="my-4">
-                      <Typography variant='h5'>Subscribe rostopic</Typography>
+                <div className="flex">
+                  <div className="w-1/3">
+                    <FormControl component="fieldset" className={classes.radioButtons}>
+                      <div className="my-4">
+                        <Typography variant='h5'>Subscribe rostopic</Typography>
+                      </div>
+                      <RadioGroup aria-label="rostopics" name="rostopics" value={selectedRostopic} onChange={handleRostopicChange} className={classes.radioGroup}>
+                        {rostopics && rostopics.map((topic: any) => {
+                          return (
+                            <FormControlLabel value={topic} control={<Radio />} label={topic} />
+                          )
+                        })}
+                      </RadioGroup>
+                    </FormControl>
+                    <div className="relative">
+                      <Button
+                        variant="contained"
+                        color="primary"
+                        disabled={rostopicButtonLoading || selectedRostopic === ''}
+                        onClick={handleSubscribeButtonClick}
+                      >
+                        Subscribe
+                      </Button>
                     </div>
-                    <RadioGroup aria-label="rostopics" name="rostopics" value={selectedRostopic} onChange={handleRostopicChange} className={classes.radioGroup}>
-                      {rostopics && rostopics.map((topic: any) => {
-                        return (
-                          <FormControlLabel value={topic} control={<Radio />} label={topic} />
-                        )
-                      })}
-                    </RadioGroup>
-                  </FormControl>
-                </div>
-                <div className="relative">
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    disabled={rostopicButtonLoading || selectedRostopic === ''}
-                    onClick={handleSubscribeButtonClick}
-                  >
-                    Subscribe
-                  </Button>
+                  </div>
+                  <div className="w-2/3">
+                    <ListComponent />
+                  </div>
                 </div>
               </Paper>
             </Grid>
