@@ -15,6 +15,9 @@ import Grid from '@material-ui/core/Grid';
 import Box from '@material-ui/core/Box';
 import Link from '@material-ui/core/Link';
 import TextField from '@material-ui/core/TextField';
+import InputLabel from '@material-ui/core/InputLabel';
+import MenuItem from '@material-ui/core/MenuItem';
+import Select from '@material-ui/core/Select';
 
 import Radio from '@material-ui/core/Radio';
 import RadioGroup from '@material-ui/core/RadioGroup';
@@ -70,6 +73,7 @@ const useStyles = makeStyles((theme: Theme) => (
     radioButtons: {
       maxHeight: 300,
       minHeight: 300,
+      maxWidth: '100%',
       textAlign: 'center',
       overflow: 'auto'
     },
@@ -103,6 +107,11 @@ const useStyles = makeStyles((theme: Theme) => (
       left: '50%',
       marginTop: -12,
       marginLeft: -12,
+    },
+    formControl: {
+      marginBottom: theme.spacing(3),
+      margin: theme.spacing(1),
+      minWidth: 120,
     },
   })
 ));
@@ -145,6 +154,8 @@ const App: React.FC = () => {
   const [selectedRostopic, setSelectedRostopic] = React.useState<string>('');
   const [selectedRostopicForPublish, setSelectedRostopicForPublish] = React.useState<string>('');
   const [selectedRostopicForUnsubscribe, setSelectedRostopicForUnsubscribe] = React.useState<string>('');
+  const [selectedR2rRostopic, setSelectedR2rRostopic] = React.useState<string>('');
+  const [selectedDestinationRobot, setSelectedDestinationRobot] = React.useState<string>('');
   const [robot, setRobot] = React.useState<any>({});
   const [submitUrlButtonLoading, setSubmitUrlButtonLoading] = React.useState<boolean>(false);
   const [connectButtonLoading, setConnectButtonLoading] = React.useState<boolean>(false);
@@ -190,7 +201,7 @@ const App: React.FC = () => {
   };
 
   const handleOnTopicArrival = (event: any) => {
-    setItems(items => [...items, event.msg.data])
+    setItems(items => [...items, JSON.stringify(event.msg)])
   }
 
   const handleConnectClicked = () => {
@@ -274,7 +285,7 @@ const App: React.FC = () => {
   );
 
   const getItemSize = (index: number) => {
-    return items[index].length > 60 ? 70 : 30
+    return items[index] && items[index].length > 60 ? 70 : 30
   }
 
   const ListComponent = () => (
@@ -317,6 +328,18 @@ const App: React.FC = () => {
 
   const handleRostopicUnsubscribeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSelectedRostopicForUnsubscribe((event.target as HTMLInputElement).value)
+  }
+
+  const handleTopicSelectboxChange = (event: React.ChangeEvent<{ value: unknown }>) => {
+    setSelectedR2rRostopic(event.target.value as string);
+  };
+
+  const handleDestinationSelectboxChange = (event: React.ChangeEvent<{ value: unknown }>) => {
+    setSelectedDestinationRobot(event.target.value as string);
+  };
+
+  const handleSubscribeR2rButtonClick = () => {
+    rowma.subscribeTopic(socket, selectedRobot, 'robot', selectedDestinationRobot, selectedR2rRostopic)
   }
 
   return (
@@ -583,8 +606,43 @@ const App: React.FC = () => {
             </Grid>
             <Grid item xs={12}>
               <Paper className={classes.paper}>
-                <div>
-                  <p>Send (Topic Selectbox) from (Robot Selectbox) to (Robot Selectbox)</p>
+                <div className="flex content-center items-center justify-center">
+                  <span>Send</span>
+                  <FormControl className={classes.formControl}>
+                    <InputLabel>Topic</InputLabel>
+                    <Select
+                      labelId="demo-simple-select-label"
+                      value={selectedR2rRostopic}
+                      onChange={handleTopicSelectboxChange}
+                    >
+                      {rostopics && rostopics.map((topic: any) => (
+                        <MenuItem value={topic}>{topic}</MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                  <span> from {selectedRobot} to </span>
+                  <FormControl className={classes.formControl}>
+                    <InputLabel>Destination</InputLabel>
+                    <Select
+                      labelId="demo-simple-select-label"
+                      value={selectedDestinationRobot}
+                      onChange={handleDestinationSelectboxChange}
+                    >
+                      {robotUuids && robotUuids.map((uuid: any) => (
+                        <MenuItem value={uuid}>{uuid}</MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                  <div className="relative">
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      disabled={selectedR2rRostopic === ''}
+                      onClick={handleSubscribeR2rButtonClick}
+                    >
+                      Subscribe
+                    </Button>
+                  </div>
                 </div>
               </Paper>
             </Grid>
