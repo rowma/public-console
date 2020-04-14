@@ -139,7 +139,7 @@ const emptyNetworkInformation: NetworkInformationInterface = {
 }
 
 const App: React.FC = () => {
-  const [rowmaUrl, setRowmaUrl] = React.useState<string>("https://rocky-peak-54058.herokuapp.com");
+  const [rowmaUrl, setRowmaUrl] = React.useState<string>("https://rowma.moriokalab.com");
   const [rowma, setRowma] = React.useState<any>(null);
   const [robotUuids, setRobotUuids] = React.useState<Array<string> | undefined>(undefined);
   const [selectedRobot, setSelectedRobot] = React.useState<any | null>(null);
