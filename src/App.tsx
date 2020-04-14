@@ -179,7 +179,7 @@ const App: React.FC = () => {
 
   const handleConnectNetworkClick = async () => {
     setSubmitUrlButtonLoading(true);
-    const _rowma = new Rowma({ baseURL: rowmaUrl })
+    const _rowma = new Rowma({ baseURL: rowmaUrl });
     setRowma(_rowma);
 
     const networkInfo = await _rowma.getNetworkInformation()
