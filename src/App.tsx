@@ -213,7 +213,7 @@ const App: React.FC = () => {
       console.log(e)
     })
 
-    rowma.getRobotStatus("", selectedRobot).then((res: any) => {
+    rowma.getRobotStatus(selectedRobot).then((res: any) => {
       setRobot(res.data)
       setRosnodes(res.data.rosnodes)
       setRosrunCommands(res.data.rosrunCommands);
@@ -238,7 +238,7 @@ const App: React.FC = () => {
     await rowma.runRosrun(socket, selectedRobot, selectedRosrunCommand, rosrunArgs);
     setRosrunButtonLoading(false);
     await sleep(2500);
-    const _robot = await rowma.getRobotStatus("", selectedRobot)
+    const _robot = await rowma.getRobotStatus(selectedRobot)
     setRosnodes(_robot.data.rosnodes)
     setRosnodeButtonLoading(false);
   }
@@ -249,7 +249,7 @@ const App: React.FC = () => {
     const result = await rowma.runLaunch(socket, selectedRobot, selectedRoslaunchCommand)
     setRoslaunchButtonLoading(false);
     await sleep(2500);
-    const _robot = await rowma.getRobotStatus("", selectedRobot)
+    const _robot = await rowma.getRobotStatus(selectedRobot)
     setRosnodes(_robot.data.rosnodes)
     setRosnodeButtonLoading(false);
   }
