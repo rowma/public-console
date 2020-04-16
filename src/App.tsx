@@ -168,6 +168,7 @@ const App: React.FC = () => {
 
   const [networkInformation, setNetworkInformation] = React.useState<any>(emptyNetworkInformation);
   const [items, setItems] = React.useState<Array<string>>([]);
+  const [_roslaunchLog, setRoslaunchLog] = React.useState<Array<string>>([]);
 
   const [socket, setSocket] = React.useState<any>(null);
 
@@ -204,11 +205,17 @@ const App: React.FC = () => {
     setItems(items => [...items, JSON.stringify(event.msg)])
   }
 
+  const handleRoslaunchLog = (event: any) => {
+    console.log(event)
+    setRoslaunchLog(items => [...items, JSON.stringify(event.log)])
+  }
+
   const handleConnectClicked = () => {
     setConnectButtonLoading(true);
     rowma.connect(selectedRobot).then((sock: any) => {
       setSocket(sock)
       sock.on('topic_to_device', handleOnTopicArrival)
+      sock.on('roslaunch_log', handleRoslaunchLog)
     }).catch((e: any) => {
       console.log(e)
     })
