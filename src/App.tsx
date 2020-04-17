@@ -169,6 +169,8 @@ const App: React.FC = () => {
   const [networkInformation, setNetworkInformation] = React.useState<any>(emptyNetworkInformation);
   const [items, setItems] = React.useState<Array<string>>([]);
   const [_roslaunchLog, setRoslaunchLog] = React.useState<Array<string>>([]);
+  const [roslaunchLogs, setRoslaunchLogs] = React.useState<Array<string>>([]);
+  const [rosrunLogs, setRosrunLogs] = React.useState<Array<string>>([]);
 
   const [socket, setSocket] = React.useState<any>(null);
 
@@ -207,7 +209,14 @@ const App: React.FC = () => {
 
   const handleRoslaunchLog = (event: any) => {
     console.log(event)
-    setRoslaunchLog(items => [...items, JSON.stringify(event.log)])
+    setRoslaunchLogs(logs => [...logs, JSON.stringify(event)])
+    // setRoslaunchLog(items => [...items, JSON.stringify(event.log)])
+  }
+
+  const handleRosrunLog = (event: any) => {
+    console.log(event)
+    setRosrunLogs(logs => [...logs, JSON.stringify(event)])
+    // setRosrunLog(items => [...items, JSON.stringify(event.log)])
   }
 
   const handleConnectClicked = () => {
@@ -215,7 +224,6 @@ const App: React.FC = () => {
     rowma.connect(selectedRobot).then((sock: any) => {
       setSocket(sock)
       sock.on('topic_to_device', handleOnTopicArrival)
-      sock.on('roslaunch_log', handleRoslaunchLog)
     }).catch((e: any) => {
       console.log(e)
     })
@@ -255,6 +263,8 @@ const App: React.FC = () => {
     setRosnodeButtonLoading(true);
     const result = await rowma.runLaunch(socket, selectedRobot, selectedRoslaunchCommand)
     setRoslaunchButtonLoading(false);
+    socket.on('roslaunch_log', handleRoslaunchLog)
+    socket.on('rosrun_log', handleRosrunLog)
     await sleep(2500);
     const _robot = await rowma.getRobotStatus("", selectedRobot)
     setRosnodes(_robot.data.rosnodes)
@@ -291,8 +301,28 @@ const App: React.FC = () => {
     </div>
   );
 
+  const RoslaunchLogRow = ({ index, style }: any) => (
+    <div style={style}>
+      <span className="p-4 text-gray-200">{JSON.parse(roslaunchLogs[index]).log}</span>
+    </div>
+  );
+
+  const RosrunLogRow = ({ index, style }: any) => (
+    <div style={style}>
+      <span className="p-4 text-gray-200">{JSON.parse(rosrunLogs[index]).log}</span>
+    </div>
+  );
+
   const getItemSize = (index: number) => {
     return items[index] && items[index].length > 60 ? 70 : 30
+  }
+
+  const getRoslaunchLogItemSize = (index: number) => {
+    return roslaunchLogs[index] && roslaunchLogs[index].length > 60 ? 50 : 20
+  }
+
+  const getRosrunLogItemSize = (index: number) => {
+    return rosrunLogs[index] && rosrunLogs[index].length > 60 ? 50 : 20
   }
 
   const ListComponent = () => (
@@ -305,6 +335,32 @@ const App: React.FC = () => {
       initialScrollOffset={items.length * 70}
     >
       {Row}
+    </VariableSizeList>
+  );
+
+  const RoslaunchLogListComponent = () => (
+    <VariableSizeList
+      height={300}
+      width={'95%'}
+      itemCount={roslaunchLogs.length}
+      itemSize={getRoslaunchLogItemSize}
+      className="border text-left my-4 mx-4 bg-gray-700"
+      initialScrollOffset={roslaunchLogs.length * 70}
+    >
+      {RoslaunchLogRow}
+    </VariableSizeList>
+  );
+
+  const RosrunLogListComponent = () => (
+    <VariableSizeList
+      height={300}
+      width={'95%'}
+      itemCount={rosrunLogs.length}
+      itemSize={getRosrunLogItemSize}
+      className="border text-left my-4 mx-4 bg-gray-700"
+      initialScrollOffset={rosrunLogs.length * 70}
+    >
+      {RosrunLogRow}
     </VariableSizeList>
   );
 
@@ -414,6 +470,14 @@ const App: React.FC = () => {
               </Paper>
             </Grid>
 
+            <Grid item xs={12} sm={12} md={8}>
+              <Paper className={`${classes.paper} h-full`}>
+                <div className="mx-4 mt-4">
+                  <iframe width={560} height={315} src="https://www.youtube.com/embed/7Rl0_7da47k" data-frameborder="0" data-allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" data-allowfullscreen></iframe>
+                </div>
+              </Paper>
+            </Grid>
+
             <Grid item xs={12} sm={12} md={4}>
               <Paper className={classes.paper}>
                 <div>
@@ -444,6 +508,12 @@ const App: React.FC = () => {
               </Paper>
             </Grid>
 
+            <Grid item xs={12} sm={12} md={8}>
+              <Paper className={classes.paper}>
+                <RosrunLogListComponent />
+              </Paper>
+            </Grid>
+
             <Grid item xs={12} sm={12} md={4}>
               <Paper className={classes.paper}>
                 <div>
@@ -471,6 +541,12 @@ const App: React.FC = () => {
                   </Button>
                   {roslaunchButtonLoading && <CircularProgress size={24} className={classes.buttonProgress} />}
                 </div>
+              </Paper>
+            </Grid>
+
+            <Grid item xs={12} sm={12} md={8}>
+              <Paper className={classes.paper}>
+                <RoslaunchLogListComponent />
               </Paper>
             </Grid>
 
