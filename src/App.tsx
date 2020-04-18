@@ -32,6 +32,10 @@ import TableCell from '@material-ui/core/TableCell';
 import TableContainer from '@material-ui/core/TableContainer';
 import TableRow from '@material-ui/core/TableRow';
 
+import AceEditor from "react-ace";
+import "ace-builds/src-noconflict/mode-python";
+import "ace-builds/src-noconflict/theme-github";
+
 // @ts-ignore
 import Rowma from 'rowma_js';
 
@@ -165,12 +169,15 @@ const App: React.FC = () => {
   const [rostopicButtonLoading, setRostopicButtonLoading] = React.useState<boolean>(false);
   const [rostopicForPublishButtonLoading, setRostopicForPublishButtonLoading] = React.useState<boolean>(false);
   const [rostopicForUnsubscribeButtonLoading, setRostopicForUnsubscribeButtonLoading] = React.useState<boolean>(false);
+  const [addScriptButtonLoading, setAddScriptButtonLoading] = React.useState<boolean>(false);
 
   const [networkInformation, setNetworkInformation] = React.useState<any>(emptyNetworkInformation);
   const [items, setItems] = React.useState<Array<string>>([]);
   const [_roslaunchLog, setRoslaunchLog] = React.useState<Array<string>>([]);
   const [roslaunchLogs, setRoslaunchLogs] = React.useState<Array<string>>([]);
   const [rosrunLogs, setRosrunLogs] = React.useState<Array<string>>([]);
+  const [scriptName, setScriptName] = React.useState<string>("");
+  const [script, setScript] = React.useState<string>("");
 
   const [socket, setSocket] = React.useState<any>(null);
 
@@ -405,6 +412,20 @@ const App: React.FC = () => {
     rowma.subscribeTopic(socket, selectedRobot, 'robot', selectedDestinationRobot, selectedR2rRostopic)
   }
 
+  const handleScriptNameFieldChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setScriptName((event.target as HTMLInputElement).value);
+  }
+
+  const handleEditorChange = (newValue: string) => {
+    setScript(newValue)
+  }
+
+  const handleUploadScriptButtonClick = async () => {
+    setAddScriptButtonLoading(true)
+    await rowma.addScript(socket, selectedRobot, scriptName, script)
+    setAddScriptButtonLoading(false)
+  }
+
   return (
     <div className={`${classes.root} App`}>
       <ThemeProvider theme={theme}>
@@ -547,6 +568,44 @@ const App: React.FC = () => {
             <Grid item xs={12} sm={12} md={8}>
               <Paper className={classes.paper}>
                 <RoslaunchLogListComponent />
+              </Paper>
+            </Grid>
+
+            <Grid item xs={12} sm={12} md={12}>
+              <Paper className={classes.paper}>
+                <div>
+                  <Typography variant='h5'>Add Script</Typography>
+                  <div className="my-4"><span>Caution: There is a possibility of arbitrary code execution when you use script addition feature, therefore, you should watch out testing this feature. Add <b>ENABLE_SCRIPT_DOWNLOAD=true</b> to rosrun rowma_ros rowma command if you use this feature.</span></div>
+                </div>
+
+                <div className="flex items-center justify-center">
+                  <TextField color="secondary" margin="dense" label="Script Name" variant="outlined" className={classes.textField} onChange={handleScriptNameFieldChange} value={scriptName} />
+                </div>
+
+                <AceEditor
+                  mode="python"
+                  theme="github"
+                  value={script}
+                  onChange={handleEditorChange}
+                  name="public-console-editor"
+                  width="100%"
+                  fontSize={18}
+                  highlightActiveLine={false}
+                  className="bg-gray-700 text-gray-200"
+                  editorProps={{ $blockScrolling: true }}
+                />
+
+                <div className="relative">
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    disabled={roslaunchButtonLoading || script === '' || scriptName === ''}
+                    onClick={handleUploadScriptButtonClick}
+                  >
+                    Upload
+                  </Button>
+                  {addScriptButtonLoading && <CircularProgress size={24} className={classes.buttonProgress} />}
+                </div>
               </Paper>
             </Grid>
 
