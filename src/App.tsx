@@ -579,7 +579,7 @@ const App: React.FC = () => {
                 </div>
 
                 <div className="flex items-center justify-center">
-                  <TextField color="secondary" margin="dense" label="Script Name" variant="outlined" className={classes.textField} onChange={handleScriptNameFieldChange} value={scriptName} />
+                  <TextField color="secondary" margin="dense" label="Script Name*" variant="outlined" className={classes.textField} onChange={handleScriptNameFieldChange} value={scriptName} />
                 </div>
 
                 <AceEditor
@@ -595,7 +595,7 @@ const App: React.FC = () => {
                   editorProps={{ $blockScrolling: true }}
                 />
 
-                <div className="relative">
+                <div className="relative mt-4">
                   <Button
                     variant="contained"
                     color="primary"
