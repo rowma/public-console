@@ -235,7 +235,7 @@ const App: React.FC = () => {
       console.log(e)
     })
 
-    rowma.getRobotStatus("", selectedRobot).then((res: any) => {
+    rowma.getRobotStatus(selectedRobot).then((res: any) => {
       setRobot(res.data)
       setRosnodes(res.data.rosnodes)
       setRosrunCommands(res.data.rosrunCommands);
@@ -575,7 +575,7 @@ const App: React.FC = () => {
               <Paper className={classes.paper}>
                 <div>
                   <Typography variant='h5'>Add Script</Typography>
-                  <div className="my-4"><span>Caution: There is a possibility of arbitrary code execution when you use script addition feature, therefore, you should watch out testing this feature. Add <b>ENABLE_SCRIPT_DOWNLOAD=true</b> to rosrun rowma_ros rowma command if you use this feature.</span></div>
+                  <div className="my-4"><span>Caution: There is a possibility of arbitrary code execution when you use script addition feature, therefore, you should watch out testing this feature. Add <b>ENABLE_SCRIPT_DOWNLOAD=True</b> to rosrun rowma_ros rowma command if you use this feature.</span></div>
                 </div>
 
                 <div className="flex items-center justify-center">
