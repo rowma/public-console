@@ -179,8 +179,6 @@ const App: React.FC = () => {
   const [scriptName, setScriptName] = React.useState<string>("");
   const [script, setScript] = React.useState<string>("");
 
-  const [socket, setSocket] = React.useState<any>(null);
-
   const classes = useStyles();
 
   const handleUrlFieldChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -210,7 +208,7 @@ const App: React.FC = () => {
     setSelectedRobot((event.target as HTMLInputElement).value);
   };
 
-  const handleOnTopicArrival = (event: any) => {
+  const handleTopicArrival = (event: any) => {
     setItems(items => [...items, JSON.stringify(event.msg)])
   }
 
@@ -228,11 +226,8 @@ const App: React.FC = () => {
 
   const handleConnectClicked = () => {
     setConnectButtonLoading(true);
-    rowma.connect(selectedRobot).then((sock: any) => {
-      setSocket(sock)
-      sock.on('topic_to_device', handleOnTopicArrival)
-    }).catch((e: any) => {
-      console.log(e)
+    rowma.connect().catch((e: any) => {
+      console.error(e)
     })
 
     rowma.getRobotStatus(selectedRobot).then((res: any) => {
@@ -257,7 +252,7 @@ const App: React.FC = () => {
     setRosrunButtonLoading(true);
     setRosnodeButtonLoading(true);
     const rosrunArgs = '';
-    await rowma.runRosrun(socket, selectedRobot, selectedRosrunCommand, rosrunArgs);
+    await rowma.runRosrun(selectedRobot, selectedRosrunCommand, rosrunArgs);
     setRosrunButtonLoading(false);
     await sleep(2500);
     const _robot = await rowma.getRobotStatus("", selectedRobot)
@@ -268,10 +263,10 @@ const App: React.FC = () => {
   const handleRoslaunchButtonClick = async () => {
     setRoslaunchButtonLoading(true);
     setRosnodeButtonLoading(true);
-    const result = await rowma.runLaunch(socket, selectedRobot, selectedRoslaunchCommand)
+    const result = await rowma.runLaunch(selectedRobot, selectedRoslaunchCommand)
     setRoslaunchButtonLoading(false);
-    socket.on('roslaunch_log', handleRoslaunchLog)
-    socket.on('rosrun_log', handleRosrunLog)
+    rowma.subscribe('roslaunch_log', handleRoslaunchLog)
+    rowma.subscribe('rosrun_log', handleRosrunLog)
     await sleep(2500);
     const _robot = await rowma.getRobotStatus("", selectedRobot)
     setRosnodes(_robot.data.rosnodes)
@@ -284,7 +279,7 @@ const App: React.FC = () => {
 
   const handleRosnodeButtonClick = async () => {
     setRosnodeButtonLoading(true);
-    const result = await rowma.killNodes(socket, selectedRobot, [selectedRosnode]);
+    const result = await rowma.killNodes(selectedRobot, [selectedRosnode]);
     if (result.status === 'success') {
       const index = rosnodes.indexOf(selectedRosnode)
       rosnodes.splice(index, 1);
@@ -294,7 +289,8 @@ const App: React.FC = () => {
 
   const handleSubscribeButtonClick = async () => {
     setRostopicButtonLoading(true);
-    await rowma.subscribeTopic(socket, selectedRobot, 'application', rowma.uuid, selectedRostopic);
+    await rowma.subscribe(selectedRostopic, handleTopicArrival)
+    await rowma.setTopicRoute(selectedRobot, 'application', rowma.uuid, selectedRostopic);
     setRostopicButtonLoading(false);
   }
 
@@ -373,7 +369,7 @@ const App: React.FC = () => {
 
   const handleUnsubscribeButtonClick = () => {
     setRostopicForUnsubscribeButtonLoading(true);
-    rowma.unsubscribeTopic(socket, selectedRobot, selectedRostopicForUnsubscribe)
+    rowma.unsubscribeTopic(selectedRobot, selectedRostopicForUnsubscribe)
     setRostopicForUnsubscribeButtonLoading(false);
   }
 
@@ -384,7 +380,7 @@ const App: React.FC = () => {
       "topic": selectedRostopicForPublish,
       "msg": JSON.parse(topicMsg),
     }
-    await rowma.publishTopic(socket, selectedRobot, msg)
+    await rowma.publishTopic(selectedRobot, msg)
     setRostopicForPublishButtonLoading(false);
   }
 
@@ -409,7 +405,7 @@ const App: React.FC = () => {
   };
 
   const handleSubscribeR2rButtonClick = () => {
-    rowma.subscribeTopic(socket, selectedRobot, 'robot', selectedDestinationRobot, selectedR2rRostopic)
+    rowma.setTopicRoute(selectedRobot, 'robot', selectedDestinationRobot, selectedR2rRostopic)
   }
 
   const handleScriptNameFieldChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -422,7 +418,7 @@ const App: React.FC = () => {
 
   const handleUploadScriptButtonClick = async () => {
     setAddScriptButtonLoading(true)
-    await rowma.addScript(socket, selectedRobot, scriptName, script)
+    await rowma.addScript(selectedRobot, scriptName, script)
     setAddScriptButtonLoading(false)
   }
 
