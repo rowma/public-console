@@ -375,12 +375,7 @@ const App: React.FC = () => {
 
   const handlePublishButtonClick = async () => {
     setRostopicForPublishButtonLoading(true);
-    const msg = {
-      "op": "publish",
-      "topic": selectedRostopicForPublish,
-      "msg": JSON.parse(topicMsg),
-    }
-    await rowma.publishTopic(selectedRobot, msg)
+    await rowma.publish(selectedRobot, selectedRostopicForPublish, JSON.parse(topicMsg))
     setRostopicForPublishButtonLoading(false);
   }
 
