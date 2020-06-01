@@ -229,6 +229,7 @@ const App: React.FC = () => {
     rowma.connect().catch((e: any) => {
       console.error(e)
     })
+    rowma.setRobotUuid(selectedRobot);
 
     rowma.getRobotStatus(selectedRobot).then((res: any) => {
       setRobot(res.data)
@@ -265,8 +266,7 @@ const App: React.FC = () => {
     setRosnodeButtonLoading(true);
     const result = await rowma.runLaunch(selectedRobot, selectedRoslaunchCommand)
     setRoslaunchButtonLoading(false);
-    rowma.subscribe('roslaunch_log', handleRoslaunchLog)
-    rowma.subscribe('rosrun_log', handleRosrunLog)
+    rowma.socket.on('roslaunch_log', handleRoslaunchLog)
     await sleep(2500);
     const _robot = await rowma.getRobotStatus("", selectedRobot)
     setRosnodes(_robot.data.rosnodes)
@@ -279,6 +279,7 @@ const App: React.FC = () => {
 
   const handleRosnodeButtonClick = async () => {
     setRosnodeButtonLoading(true);
+    rowma.socket.on('rosrun_log', handleRosrunLog)
     const result = await rowma.killNodes(selectedRobot, [selectedRosnode]);
     if (result.status === 'success') {
       const index = rosnodes.indexOf(selectedRosnode)
